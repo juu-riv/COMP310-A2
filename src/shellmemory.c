@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "shellmemory.h"
+#include "pcb.h"
+#include "queue.h"
 
 struct memory_struct {
     char *var;
@@ -16,18 +18,6 @@ struct load_struct {
 };
 
 struct load_struct loadmemory;
-
-struct PCB_struct {
-    int pid;        // unique process ID
-    int pc;         // current instruction index
-    int start;      // start index in memory
-    int length;     // number for lines of script
-    struct PCB_struct *next;
-};
-
-struct queue_struct {
-    struct PCB_struct *head;
-};
 
 // Helper functions
 int match(char *model, char *var) {
@@ -88,10 +78,7 @@ char *mem_get_value(char *var_in) {
 }
 
 void mem_alloc(FILE *script) {
-    struct PCB_struct pcb;
-    pcb.pid = pid_get_value();
-    pcb.pc = loadmemory.count;
-    pcb.start = loadmemory.count;
+    struct PCB_struct *pcb = PCB_init(loadmemory.count);
 
     char buf[LINE_SIZE];
     while (loadmemory.count < MEM_SIZE && fgets(buf, LINE_SIZE, script) != NULL) {
@@ -99,10 +86,6 @@ void mem_alloc(FILE *script) {
         loadmemory.count++;
     }
 
-    pcb.length = loadmemory.count - pcb.start;
-}
-
-static int PID = 1;
-int pid_get_value() {
-    return PID++;
+    pcb->length = loadmemory.count - pcb->start;
+    queue_enqueue(pcb);
 }
