@@ -10,6 +10,25 @@ struct memory_struct {
 
 struct memory_struct shellmemory[MEM_SIZE];
 
+struct load_struct {
+    char *lines[MEM_SIZE];  // lines of
+    int count;
+};
+
+struct load_struct loadmemory;
+
+struct PCB_struct {
+    int pid;        // unique process ID
+    int pc;         // current instruction index
+    int start;      // start index in memory
+    int length;     // number for lines of script
+    struct PCB_struct *next;
+};
+
+struct queue_struct {
+    struct PCB_struct *head;
+};
+
 // Helper functions
 int match(char *model, char *var) {
     int i, len = strlen(var), matchCount = 0;
@@ -66,4 +85,24 @@ char *mem_get_value(char *var_in) {
         }
     }
     return NULL;
+}
+
+void mem_alloc(FILE *script) {
+    struct PCB_struct pcb;
+    pcb.pid = pid_get_value();
+    pcb.pc = loadmemory.count;
+    pcb.start = loadmemory.count;
+
+    char buf[LINE_SIZE];
+    while (loadmemory.count < MEM_SIZE && fgets(buf, LINE_SIZE, script) != NULL) {
+        loadmemory.lines[loadmemory.count] = strdup(buf);
+        loadmemory.count++;
+    }
+
+    pcb.length = loadmemory.count - pcb.start;
+}
+
+static int PID = 1;
+int pid_get_value() {
+    return PID++;
 }
