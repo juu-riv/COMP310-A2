@@ -23,6 +23,9 @@
 #include "shellmemory.h"
 #include "shell.h"
 
+// for source:
+#include "queue.h"
+
 int badcommand() {
     printf("Unknown Command\n");
     return 1;
@@ -363,18 +366,11 @@ int source(char *script) {
         return badcommandFileDoesNotExist();
     }
 
-    fgets(line, MAX_USER_INPUT - 1, p);
-    while (1) {
-        errCode = parseInput(line);     // which calls interpreter()
-        memset(line, 0, sizeof(line));
+    struct PCB_struct *pcb = mem_alloc(p);  // load memory and create PCB
+    fclose(p);                              // close script
 
-        if (feof(p)) {
-            break;
-        }
-        fgets(line, MAX_USER_INPUT - 1, p);
-    }
-
-    fclose(p);
+    queue_enqueue(pcb);                     // enqueue PCB
+    errCode = scheduler();                  // run scheduler
 
     return errCode;
 }

@@ -13,8 +13,8 @@ struct memory_struct {
 struct memory_struct shellmemory[MEM_SIZE];
 
 struct load_struct {
-    char *lines[MEM_SIZE];  // lines of
-    int count;
+    char *lines[MEM_SIZE];  // lines in memory
+    int count;              // line count in memory
 };
 
 struct load_struct loadmemory;
@@ -77,7 +77,7 @@ char *mem_get_value(char *var_in) {
     return NULL;
 }
 
-void mem_alloc(FILE *script) {
+struct PCB_struct *mem_alloc(FILE *script) {
     struct PCB_struct *pcb = PCB_init(loadmemory.count);
 
     char buf[LINE_SIZE];
@@ -87,5 +87,18 @@ void mem_alloc(FILE *script) {
     }
 
     pcb->length = loadmemory.count - pcb->start;
-    queue_enqueue(pcb);
+    return pcb;
+}
+
+char *mem_get_from(int pc) {
+    return loadmemory.lines[pc];
+}
+
+void mem_free(struct PCB_struct *pcb) {
+    for (int i = pcb->start; i < pcb->start + pcb->length; i++) {
+        if (loadmemory.lines[i] != NULL) {
+            free(loadmemory.lines[i]);
+            loadmemory.lines[i] = NULL;
+        }
+    }
 }

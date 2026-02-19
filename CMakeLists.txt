@@ -12,4 +12,7 @@ add_executable(A2_261120458 main.cpp
         src/pcb.c
         src/queue.h
         src/queue.c
+        src/scheduler.h
+        src/scheduler.h
+        src/scheduler.c
 )
