@@ -22,6 +22,7 @@
 
 #include "shellmemory.h"
 #include "shell.h"
+#include "scheduler.h"
 
 // for source:
 #include "queue.h"
@@ -59,6 +60,8 @@ int cd(char *path);
 int source(char *script);
 int run(char *args[], int args_size);
 int badcommandFileDoesNotExist();
+
+int exec(char *args[], int args_size);
 
 // Interpret commands and their arguments
 int interpreter(char *command_args[], int args_size) {
@@ -140,6 +143,11 @@ int interpreter(char *command_args[], int args_size) {
         if (args_size < 2)
             return badcommand();
         return run(&command_args[1], args_size - 1);
+
+    } else if (strcmp(command_args[0], "exec") == 0) {
+        if (args_size < 3 || args_size > 5)
+            return badcommand();
+        return exec(&command_args[1], args_size - 1);
 
     } else
         return badcommand();
@@ -369,7 +377,8 @@ int source(char *script) {
     struct PCB_struct *pcb = mem_alloc(p);  // load memory and create PCB
     fclose(p);                              // close script
 
-    queue_enqueue(pcb);                     // enqueue PCB
+    set_policy(FCFS);                       // set policy to FCFS
+    policy_enqueue(pcb);                    // enqueue PCB
     errCode = scheduler();                  // run scheduler
 
     return errCode;
@@ -410,4 +419,25 @@ int run(char *args[], int arg_size) {
     }
 
     return 0;
+}
+
+int exec(char *args[], int args_size) {
+    int errCode = 0;
+    char *policy = args[args_size - 1];
+
+    if (strcmp(policy, "FCFS") == 0) {
+        set_policy(FCFS);
+
+    } else if (strcmp(policy, "SJF") == 0) {
+        set_policy(SJF);
+
+    } else if (strcmp(policy, "RR") == 0) {
+        set_policy(RR);
+
+    } else if (strcmp(policy, "AGING") == 0) {
+        set_policy(AGING);
+
+    } else {
+        return badcommand();
+    }
 }

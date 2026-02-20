@@ -4,7 +4,6 @@
 #include "pcb.h"
 #include "queue.h"
 #include "shellmemory.h"
-#include "interpreter.h"
 #include "shell.h"
 
 static enum policy_enum policy = FCFS;
@@ -12,6 +11,10 @@ static int quantum = 2;
 
 void set_policy(enum policy_enum scheduling_policy) {
     policy = scheduling_policy;
+}
+
+enum policy_enum get_policy() {
+    return policy;
 }
 
 int scheduler() {

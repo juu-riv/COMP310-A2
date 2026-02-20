@@ -1,3 +1,4 @@
+#include <stdio.h>
 #define MEM_SIZE 1000
 #define LINE_SIZE 100
 void mem_init();

@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "pcb.h"
 #include "queue.h"
+#include "scheduler.h"
 
 static struct queue_struct readyqueue;
 
@@ -10,7 +11,17 @@ void queue_init() {
     readyqueue.tail = NULL;
 }
 
-void queue_enqueue(struct PCB_struct *pcb) {
+void policy_enqueue(struct PCB_struct *pcb) {
+    enum policy_enum policy = get_policy();
+    if (policy == FCFS || policy == RR) {
+        queue_enqueue_fifo(pcb);
+    }
+    else {
+        queue_enqueue_priority(pcb);
+    }
+}
+
+void queue_enqueue_fifo(struct PCB_struct *pcb) {
     if (queue_is_empty()) {
         readyqueue.head = pcb;
         readyqueue.tail = pcb;
@@ -19,6 +30,44 @@ void queue_enqueue(struct PCB_struct *pcb) {
     else {
         readyqueue.tail->next = pcb;
         readyqueue.tail = pcb;
+        pcb->next = NULL;
+    }
+}
+
+void queue_enqueue_priority(struct PCB_struct *pcb) {
+    if (queue_is_empty()) {
+        readyqueue.head = pcb;
+        readyqueue.tail = pcb;
+        pcb->next = NULL;
+    }
+    else {
+        struct PCB_struct *prev = NULL;
+        struct PCB_struct *curr = readyqueue.head;
+        while (curr != NULL && compare_priority(curr, pcb) <= 0) {
+            prev = curr;
+            curr = curr->next;
+        }
+        if (prev == NULL) {
+            pcb->next = readyqueue.head;
+            readyqueue.head = pcb;
+        }
+        else {
+            prev->next = pcb;
+            pcb->next = curr;
+        }
+        if (curr == NULL) {
+            readyqueue.tail = pcb;
+        }
+    }
+}
+
+int compare_priority(struct PCB_struct *curr, struct PCB_struct *pcb) {
+    enum policy_enum policy = get_policy();
+    if (policy == SJF) {
+        return curr->length - pcb->length;
+    }
+    if (policy == AGING) {
+        return 0; //TO DO
     }
 }
 
