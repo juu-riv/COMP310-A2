@@ -3,6 +3,7 @@
 #include "pcb.h"
 #include "queue.h"
 #include "scheduler.h"
+#include "shellmemory.h"
 
 static struct queue_struct readyqueue;
 
@@ -67,7 +68,7 @@ int compare_priority(struct PCB_struct *curr, struct PCB_struct *pcb) {
         return curr->length - pcb->length;
     }
     if (policy == AGING) {
-        return 0; //TO DO
+        return curr->priority - pcb->priority;
     }
 }
 
@@ -86,8 +87,39 @@ int queue_is_empty() {
 }
 
 void queue_destroy() {
-    while (!queue_is_empty()) {
-        struct PCB_struct *pcb = queue_dequeue();
-        PCB_free(pcb);
+    struct PCB_struct *curr = readyqueue.head;
+    struct PCB_struct *prev = NULL;
+
+    while (curr != NULL) {
+        struct PCB_struct *next = curr->next;
+        if (!curr->background) {
+            if (prev == NULL) {
+                readyqueue.head = next;
+            }
+            else {
+                prev->next = next;
+            }
+            curr->next = NULL;
+            mem_free(curr);
+            PCB_free(curr);
+        }
+        else {
+            prev = curr;
+        }
+        curr = next;
+    }
+    if (prev == NULL) {
+        readyqueue.tail = NULL;
+    }
+    else {
+        readyqueue.tail = prev;
+    }
+}
+
+void queue_aged() {
+    struct PCB_struct *curr = readyqueue.head;
+    while (curr != NULL) {
+        curr->priority--;
+        curr = curr->next;
     }
 }

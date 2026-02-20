@@ -14,5 +14,6 @@ int compare_priority(struct PCB_struct *curr, struct PCB_struct *pcb);
 struct PCB_struct *queue_dequeue();
 int queue_is_empty();
 void queue_destroy();
+void queue_aged();
 
 #endif //A2_261120458_QUEUE_H

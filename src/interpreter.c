@@ -145,7 +145,7 @@ int interpreter(char *command_args[], int args_size) {
         return run(&command_args[1], args_size - 1);
 
     } else if (strcmp(command_args[0], "exec") == 0) {
-        if (args_size < 3 || args_size > 5)
+        if (args_size < 3 || args_size > 7)     // before 5-6
             return badcommand();
         return exec(&command_args[1], args_size - 1);
 
@@ -367,7 +367,7 @@ int cd(char *path) {
 
 int source(char *script) {
     int errCode = 0;
-    char line[MAX_USER_INPUT];
+    //char line[MAX_USER_INPUT];
     FILE *p = fopen(script, "rt");      // the program is in a file
 
     if (p == NULL) {
@@ -423,21 +423,70 @@ int run(char *args[], int arg_size) {
 
 int exec(char *args[], int args_size) {
     int errCode = 0;
-    char *policy = args[args_size - 1];
 
-    if (strcmp(policy, "FCFS") == 0) {
+    int is_background = 0;
+    int is_multithreaded = 0;
+    int last_prog = args_size - 1;
+    char *policy = NULL;
+
+    for (int h = args_size - 1; h >= args_size - 2 && h >= 1; i--) {
+        if (strcmp(args[h], "#") == 0) {
+            is_background = 1;
+            last_prog--;
+
+        } else if (strcasecmp(args[h], "MT") == 0) {
+            is_multithreaded = 1;
+            last_prog--;
+
+        } else {
+            policy = args[h];
+        }
+    }
+
+    if (policy == NULL) {
+        return badcommand();
+    }
+
+    for (int i = 0; i <= last_prog; i++) {
+        for (int j = i + 1; j <= last_prog; j++) {
+            if (strcmp(args[i], args[j]) == 0) {
+                return badcommand();
+            }
+        }
+    }
+
+    if (strcasecmp(policy, "FCFS") == 0) {
         set_policy(FCFS);
 
-    } else if (strcmp(policy, "SJF") == 0) {
+    } else if (strcasecmp(policy, "SJF") == 0) {
         set_policy(SJF);
 
-    } else if (strcmp(policy, "RR") == 0) {
+    } else if (strcasecmp(policy, "RR") == 0) {
         set_policy(RR);
 
-    } else if (strcmp(policy, "AGING") == 0) {
+    } else if (strcasecmp(policy, "AGING") == 0) {
         set_policy(AGING);
 
     } else {
         return badcommand();
     }
+
+
+    for (int k = 0; k <= last_prog; k++) {
+        FILE *p = fopen(args[k], "rt");
+
+        if (p == NULL) {
+            queue_destroy();
+            return badcommandFileDoesNotExist();
+        }
+
+        struct PCB_struct *pcb = mem_alloc(p);  // load memory and create PCB
+        if (is_background) { pcb->background = 1; }
+        fclose(p);
+
+        policy_enqueue(pcb);
+    }
+
+    errCode = scheduler();
+    return errCode;
 }

@@ -12,6 +12,7 @@ enum policy_enum {
 void set_policy(enum policy_enum scheduling_policy);
 enum policy_enum get_policy(void);
 int scheduler();
-int FCFS_scheduler();
+int non_preemptive_scheduler();
+int preemptive_scheduler();
 
 #endif //A2_261120458_SCHEDULER_H

@@ -87,6 +87,7 @@ struct PCB_struct *mem_alloc(FILE *script) {
     }
 
     pcb->length = loadmemory.count - pcb->start;
+    pcb->priority = pcb->length;
     return pcb;
 }
 

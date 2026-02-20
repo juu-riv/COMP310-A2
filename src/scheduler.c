@@ -19,13 +19,17 @@ enum policy_enum get_policy() {
 
 int scheduler() {
     int errCode = 0;
-    if (policy == FCFS) {
-        errCode = FCFS_scheduler();
+    if (policy == FCFS || policy == SJF) {
+        errCode = non_preemptive_scheduler();
     }
+    else {
+        errCode =  preemptive_scheduler();
+    }
+    queue_destroy();
     return errCode;
 }
 
-int FCFS_scheduler() {
+int non_preemptive_scheduler() {
     int errCode = 0;
     while (!queue_is_empty()) {
         struct PCB_struct *pcb = queue_dequeue();
@@ -36,6 +40,39 @@ int FCFS_scheduler() {
         }
         mem_free(pcb);
         PCB_free(pcb);
+    }
+    return errCode;
+}
+
+int preemptive_scheduler() {
+    int errCode = 0;
+
+    if (policy == RR) {
+        quantum = 2;
+    }
+    else if (policy == AGING) {
+        quantum = 1;
+    }
+
+    while (!queue_is_empty()) {
+        struct PCB_struct *pcb = queue_dequeue();
+        int counter = quantum;
+        while (counter > 0 && pcb->pc < pcb->start + pcb->length) {
+            char *line = mem_get_from(pcb->pc);
+            errCode = parseInput(line); // which calls interpreter()
+            pcb->pc++;
+            counter--;
+        }
+        if (policy == AGING) {
+            queue_aged();
+        }
+        if (pcb->pc < pcb->start + pcb->length) {
+            policy_enqueue(pcb);
+        }
+        else {
+            mem_free(pcb);
+            PCB_free(pcb);
+        }
     }
     return errCode;
 }
