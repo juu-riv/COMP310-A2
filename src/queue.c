@@ -98,7 +98,7 @@ void queue_destroy() {
 void queue_aged() {
     struct PCB_struct *curr = readyqueue.head;
     while (curr != NULL) {
-        curr->priority--;
+        if (curr > 0) { curr->priority--; }
         curr = curr->next;
     }
 }
