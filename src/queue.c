@@ -87,33 +87,12 @@ int queue_is_empty() {
 }
 
 void queue_destroy() {
-    struct PCB_struct *curr = readyqueue.head;
-    struct PCB_struct *prev = NULL;
-
-    while (curr != NULL) {
-        struct PCB_struct *next = curr->next;
-        if (!curr->background) {
-            if (prev == NULL) {
-                readyqueue.head = next;
-            }
-            else {
-                prev->next = next;
-            }
-            curr->next = NULL;
-            mem_free(curr);
-            PCB_free(curr);
-        }
-        else {
-            prev = curr;
-        }
-        curr = next;
+    while (!queue_is_empty()) {
+        struct PCB_struct *pcb = queue_dequeue();
+        PCB_free(pcb);
     }
-    if (prev == NULL) {
-        readyqueue.tail = NULL;
-    }
-    else {
-        readyqueue.tail = prev;
-    }
+    readyqueue.head = NULL;
+    readyqueue.tail = NULL;
 }
 
 void queue_aged() {

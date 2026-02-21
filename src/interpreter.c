@@ -26,6 +26,7 @@
 
 // for source:
 #include "queue.h"
+#include "pcb.h"
 
 int badcommand() {
     printf("Unknown Command\n");
@@ -145,12 +146,13 @@ int interpreter(char *command_args[], int args_size) {
         return run(&command_args[1], args_size - 1);
 
     } else if (strcmp(command_args[0], "exec") == 0) {
-        if (args_size < 3 || args_size > 7)     // before 5-6
+        if (args_size < 3 || args_size > 7)// before 5-6
             return badcommand();
         return exec(&command_args[1], args_size - 1);
 
-    } else
+    } else {
         return badcommand();
+    }
 }
 
 int help() {
@@ -429,7 +431,7 @@ int exec(char *args[], int args_size) {
     int last_prog = args_size - 1;
     char *policy = NULL;
 
-    for (int h = args_size - 1; h >= args_size - 2 && h >= 1; i--) {
+    for (int h = args_size - 1; h >= args_size - 2 && h >= 1; h--) {
         if (strcmp(args[h], "#") == 0) {
             is_background = 1;
             last_prog--;
@@ -440,6 +442,7 @@ int exec(char *args[], int args_size) {
 
         } else {
             policy = args[h];
+            break;
         }
     }
 
@@ -471,8 +474,7 @@ int exec(char *args[], int args_size) {
         return badcommand();
     }
 
-
-    for (int k = 0; k <= last_prog; k++) {
+    for (int k = 0; k < last_prog; k++) {
         FILE *p = fopen(args[k], "rt");
 
         if (p == NULL) {
