@@ -67,7 +67,7 @@ int preemptive_scheduler() {
             queue_aged();
         }
         if (pcb->pc < pcb->start + pcb->length) {
-            policy_enqueue(pcb);
+            policy_reenqueue(pcb);
         }
         else {
             mem_free(pcb);

@@ -12,6 +12,12 @@ void queue_init() {
     readyqueue.tail = NULL;
 }
 
+void policy_reenqueue(struct PCB_struct *pcb) {
+    enum policy_enum policy = get_policy();
+    if (policy == AGING) { queue_aged_enqueue(pcb); }
+    else { policy_enqueue(pcb); }
+}
+
 void policy_enqueue(struct PCB_struct *pcb) {
     enum policy_enum policy = get_policy();
     if (policy == FCFS || policy == RR) {
@@ -98,7 +104,28 @@ void queue_destroy() {
 void queue_aged() {
     struct PCB_struct *curr = readyqueue.head;
     while (curr != NULL) {
-        if (curr > 0) { curr->priority--; }
+        if (curr->priority > 0) { curr->priority--; }
         curr = curr->next;
+    }
+}
+
+void queue_aged_enqueue(struct PCB_struct *pcb) {
+    if (queue_is_empty()) {
+        readyqueue.head = pcb;
+        readyqueue.tail = pcb;
+        pcb->next = NULL;
+        return;
+    }
+
+    if (readyqueue.head->priority < pcb->priority) {
+        queue_enqueue_priority(pcb);
+    }
+    else {
+        pcb->next = readyqueue.head;
+        readyqueue.head = pcb;
+
+        if (readyqueue.tail == NULL) {
+            readyqueue.tail = pcb;
+        }
     }
 }
