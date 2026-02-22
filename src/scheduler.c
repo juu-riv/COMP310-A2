@@ -50,6 +50,9 @@ int preemptive_scheduler() {
     if (policy == RR) {
         quantum = 2;
     }
+    else if (policy == RR30) {
+        quantum = 30;
+    }
     else if (policy == AGING) {
         quantum = 1;
     }

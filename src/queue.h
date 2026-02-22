@@ -9,6 +9,7 @@ struct queue_struct {
 void queue_init();
 void policy_reenqueue(struct PCB_struct *pcb);
 void policy_enqueue(struct PCB_struct *pcb);
+void queue_enqueue_first(struct PCB_struct *pcb);
 void queue_enqueue_fifo(struct PCB_struct *pcb);
 void queue_enqueue_priority(struct PCB_struct *pcb);
 int compare_priority(struct PCB_struct *curr, struct PCB_struct *pcb);

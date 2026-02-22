@@ -467,6 +467,9 @@ int exec(char *args[], int args_size) {
     } else if (strcasecmp(policy, "RR") == 0) {
         set_policy(RR);
 
+    } else if (strcasecmp(policy, "RR30") == 0) {
+        set_policy(RR30);
+
     } else if (strcasecmp(policy, "AGING") == 0) {
         set_policy(AGING);
 
@@ -487,6 +490,11 @@ int exec(char *args[], int args_size) {
         fclose(p);
 
         policy_enqueue(pcb);
+    }
+
+    if (is_background) {
+        struct PCB_struct *batch = mem_alloc(stdin);
+        queue_enqueue_first(batch);
     }
 
     errCode = scheduler();

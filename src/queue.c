@@ -20,11 +20,19 @@ void policy_reenqueue(struct PCB_struct *pcb) {
 
 void policy_enqueue(struct PCB_struct *pcb) {
     enum policy_enum policy = get_policy();
-    if (policy == FCFS || policy == RR) {
+    if (policy == FCFS || policy == RR || policy == RR30) {
         queue_enqueue_fifo(pcb);
     }
     else {
         queue_enqueue_priority(pcb);
+    }
+}
+
+void queue_enqueue_first(struct PCB_struct *pcb) {
+    pcb->next = readyqueue.head;
+    readyqueue.head = pcb;
+    if (readyqueue.tail == NULL) {
+        readyqueue.tail = pcb;
     }
 }
 

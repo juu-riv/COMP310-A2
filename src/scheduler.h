@@ -6,6 +6,7 @@ enum policy_enum {
     FCFS,
     SJF,
     RR,
+    RR30,
     AGING
 };
 
