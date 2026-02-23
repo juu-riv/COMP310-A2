@@ -12,6 +12,8 @@ static int quantum = 2;
 static int is_running = 0;
 
 static int is_multithreaded = 0;
+static int is_working = 0;
+static int has_to_quit = 0;
 static pthread_t workers[2];
 static pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t queue_cond = PTHREAD_COND_INITIALIZER;
@@ -28,8 +30,24 @@ int get_is_running() {
     return is_running;
 }
 
+int get_is_working() {
+    return is_working;
+}
+
 void set_is_multithreaded() {
     is_multithreaded = 1;
+}
+
+void set_has_to_quit() {
+    has_to_quit = 1;
+}
+
+void scheduler_workers() {
+    if (!is_working) {
+        pthread_create(&workers[0], NULL, preemptive_scheduler_mt, NULL);
+        pthread_create(&workers[1], NULL, preemptive_scheduler_mt, NULL);
+        is_working = 1;
+    }
 }
 
 int scheduler() {
@@ -37,28 +55,10 @@ int scheduler() {
     int errCode = 0;
 
     if (policy == FCFS || policy == SJF) {
-        if (is_multithreaded) {
-            pthread_create(&workers[0], NULL, non_preemptive_scheduler_mt, NULL);
-            pthread_create(&workers[1], NULL, non_preemptive_scheduler_mt, NULL);
-
-            pthread_join(workers[0], NULL);
-            pthread_join(workers[1], NULL);
-        }
-        else {
             errCode = non_preemptive_scheduler();
-        }
     }
     else {
-        if (is_multithreaded) {
-            pthread_create(&workers[0], NULL, preemptive_scheduler_mt, NULL);
-            pthread_create(&workers[1], NULL, preemptive_scheduler_mt, NULL);
-
-            pthread_join(workers[0], NULL);
-            pthread_join(workers[1], NULL);
-        }
-        else {
             errCode = preemptive_scheduler();
-        }
     }
 
     is_running = 0;
@@ -117,32 +117,6 @@ int preemptive_scheduler() {
     return errCode;
 }
 
-void *non_preemptive_scheduler_mt(void *args) {
-    while (1) {
-        pthread_mutex_lock(&queue_mutex);
-
-        while (queue_is_empty() && is_running) {
-            pthread_cond_wait(&queue_cond, &queue_mutex);
-        }
-
-        if (queue_is_empty() && !is_running) {
-            pthread_mutex_unlock(&queue_mutex);
-            break;
-        }
-        struct PCB_struct *pcb = queue_dequeue();
-        pthread_mutex_unlock(&queue_mutex);
-        while (pcb->pc < pcb->start + pcb->length) {
-            char *line = mem_get_from(pcb->pc);
-            parseInput(line); // which calls interpreter()
-            pcb->pc++;
-        }
-        mem_free(pcb);
-        PCB_free(pcb);
-    }
-    return NULL;
-}
-
-
 void *preemptive_scheduler_mt(void *args) {
     if (policy == RR) {
         quantum = 2;
@@ -156,11 +130,11 @@ void *preemptive_scheduler_mt(void *args) {
     while (1) {
         pthread_mutex_lock(&queue_mutex);
 
-        while (queue_is_empty() && is_running) {
+        while (queue_is_empty() && !has_to_quit) {
             pthread_cond_wait(&queue_cond, &queue_mutex);
         }
 
-        if (queue_is_empty() && !is_running) {
+        if (has_to_quit) {
             pthread_mutex_unlock(&queue_mutex);
             break;
         }
@@ -187,14 +161,15 @@ void *preemptive_scheduler_mt(void *args) {
             mem_free(pcb);
             PCB_free(pcb);
         }
+        pthread_mutex_unlock(&queue_mutex);
     }
-    pthread_mutex_unlock(&queue_mutex);
     return NULL;
 }
 
 void scheduler_stop() {
     pthread_mutex_lock(&queue_mutex);
     is_running = 0;
+    has_to_quit = 1;
     pthread_cond_broadcast(&queue_cond);
     pthread_mutex_unlock(&queue_mutex);
 
@@ -204,6 +179,12 @@ void scheduler_stop() {
     }
 
     queue_destroy();
+
+    is_running = 0;
+
+    is_multithreaded = 0;
+    is_working = 0;
+    has_to_quit = 0;
 }
 
 void scheduler_enqueue(struct PCB_struct *pcb) {

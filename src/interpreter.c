@@ -169,6 +169,7 @@ source SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
 }
 
 int quit() {
+    scheduler_stop();
     printf("Bye!\n");
     exit(0);
 }
@@ -427,6 +428,7 @@ int exec(char *args[], int args_size) {
     int errCode = 0;
 
     int is_background = 0;
+    int is_multithreaded = 0;
     int last_prog = args_size - 1;
     char *policy = NULL;
 
@@ -436,6 +438,7 @@ int exec(char *args[], int args_size) {
             last_prog--;
 
         } else if (strcasecmp(args[h], "MT") == 0) {
+            is_multithreaded = 1;
             set_is_multithreaded();
             last_prog--;
 
@@ -494,8 +497,13 @@ int exec(char *args[], int args_size) {
         struct PCB_struct *batch = mem_alloc(stdin);
         scheduler_enqueue_first(batch);
     }
-    if (!get_is_running()) {
-        errCode = scheduler();
+
+    if (is_multithreaded) {
+        if (!get_is_working()) { scheduler_workers(); }
+    }
+
+    else  {
+        if (!get_is_running()) { errCode = scheduler(); }
     }
     return errCode;
 }
