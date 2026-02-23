@@ -430,7 +430,7 @@ int exec(char *args[], int args_size) {
     int last_prog = args_size - 1;
     char *policy = NULL;
 
-    for (int h = args_size - 1; h >= args_size - 2 && h >= 1; h--) {
+    for (int h = args_size - 1; h >= args_size - 3 && h >= 1; h--) {
         if (strcmp(args[h], "#") == 0) {
             is_background = 1;
             last_prog--;
