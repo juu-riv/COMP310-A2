@@ -6,6 +6,7 @@
 #include "shell.h"
 #include "interpreter.h"
 #include "shellmemory.h"
+#include "scheduler.h"
 
 int parseInput(char ui[]);
 
@@ -38,6 +39,7 @@ int main(int argc, char *argv[]) {
             exit(99);           // ignore all other errors
 
         if (feof(stdin)) {
+            if (batch_mode) { scheduler_stop(); }
             return 0;
         }
 

@@ -146,7 +146,7 @@ int interpreter(char *command_args[], int args_size) {
         return run(&command_args[1], args_size - 1);
 
     } else if (strcmp(command_args[0], "exec") == 0) {
-        if (args_size < 3 || args_size > 7)// before 5-6
+        if (args_size < 3)// before 5-6
             return badcommand();
         return exec(&command_args[1], args_size - 1);
 
@@ -427,7 +427,6 @@ int exec(char *args[], int args_size) {
     int errCode = 0;
 
     int is_background = 0;
-    int is_multithreaded = 0;
     int last_prog = args_size - 1;
     char *policy = NULL;
 
@@ -437,7 +436,7 @@ int exec(char *args[], int args_size) {
             last_prog--;
 
         } else if (strcasecmp(args[h], "MT") == 0) {
-            is_multithreaded = 1;
+            set_is_multithreaded();
             last_prog--;
 
         } else {
@@ -488,12 +487,12 @@ int exec(char *args[], int args_size) {
         //if (is_background) { pcb->background = 1; }
         fclose(p);
 
-        policy_enqueue(pcb);
+        scheduler_enqueue(pcb);
     }
 
     if (is_background) {
         struct PCB_struct *batch = mem_alloc(stdin);
-        queue_enqueue_first(batch);
+        scheduler_enqueue_first(batch);
     }
     if (!get_is_running()) {
         errCode = scheduler();

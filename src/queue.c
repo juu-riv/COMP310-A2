@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 #include "pcb.h"
 #include "queue.h"
 #include "scheduler.h"
