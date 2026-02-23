@@ -8,6 +8,7 @@
 
 static enum policy_enum policy = FCFS;
 static int quantum = 2;
+static int is_running = 0;
 
 void set_policy(enum policy_enum scheduling_policy) {
     policy = scheduling_policy;
@@ -17,7 +18,13 @@ enum policy_enum get_policy() {
     return policy;
 }
 
+int get_is_running() {
+    return is_running;
+}
+
 int scheduler() {
+    is_running = 1;
+
     int errCode = 0;
     if (policy == FCFS || policy == SJF) {
         errCode = non_preemptive_scheduler();
@@ -25,6 +32,9 @@ int scheduler() {
     else {
         errCode =  preemptive_scheduler();
     }
+
+    is_running = 0;
+
     queue_destroy();
     return errCode;
 }

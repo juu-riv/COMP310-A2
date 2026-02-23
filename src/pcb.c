@@ -9,7 +9,7 @@ int PID_get_value() {
 struct PCB_struct *PCB_init(int start) {
     struct PCB_struct *pcb = malloc(sizeof(struct PCB_struct));
     pcb->pid =  PID_get_value();
-    pcb->background = 0;
+    //pcb->background = 0;
     pcb->pc = start;
     pcb->start = start;
     pcb->length = 0;

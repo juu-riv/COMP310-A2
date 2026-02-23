@@ -12,6 +12,7 @@ enum policy_enum {
 
 void set_policy(enum policy_enum scheduling_policy);
 enum policy_enum get_policy(void);
+int get_is_running(void);
 int scheduler();
 int non_preemptive_scheduler();
 int preemptive_scheduler();

@@ -4,7 +4,7 @@
 
 struct PCB_struct {
     int pid;        // unique process ID
-    int background; // 1 = true, 0 = false
+    //int background; // 1 = true, 0 = false
     int pc;         // current instruction index
     int start;      // start index in memory
     int length;     // number for lines of script

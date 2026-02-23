@@ -481,12 +481,11 @@ int exec(char *args[], int args_size) {
         FILE *p = fopen(args[k], "rt");
 
         if (p == NULL) {
-            queue_destroy();
             return badcommandFileDoesNotExist();
         }
 
         struct PCB_struct *pcb = mem_alloc(p);  // load memory and create PCB
-        if (is_background) { pcb->background = 1; }
+        //if (is_background) { pcb->background = 1; }
         fclose(p);
 
         policy_enqueue(pcb);
@@ -496,7 +495,8 @@ int exec(char *args[], int args_size) {
         struct PCB_struct *batch = mem_alloc(stdin);
         queue_enqueue_first(batch);
     }
-
-    errCode = scheduler();
+    if (!get_is_running()) {
+        errCode = scheduler();
+    }
     return errCode;
 }
