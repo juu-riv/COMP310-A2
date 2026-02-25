@@ -428,7 +428,6 @@ int exec(char *args[], int args_size) {
     int errCode = 0;
 
     int is_background = 0;
-    int is_multithreaded = 0;
     int last_prog = args_size - 1;
     char *policy = NULL;
 
@@ -438,7 +437,6 @@ int exec(char *args[], int args_size) {
             last_prog--;
 
         } else if (strcasecmp(args[h], "MT") == 0) {
-            is_multithreaded = 1;
             set_is_multithreaded();
             last_prog--;
 
@@ -498,7 +496,7 @@ int exec(char *args[], int args_size) {
         scheduler_enqueue_first(batch);
     }
 
-    if (is_multithreaded) {
+    if (get_is_multithreaded()) {
         if (!get_is_working()) { scheduler_workers(); }
     }
 

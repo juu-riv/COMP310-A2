@@ -85,6 +85,7 @@ int compare_priority(struct PCB_struct *curr, struct PCB_struct *pcb) {
     if (policy == AGING) {
         return curr->priority - pcb->priority;
     }
+    return 0;
 }
 
 struct PCB_struct *queue_dequeue() {
@@ -93,6 +94,7 @@ struct PCB_struct *queue_dequeue() {
     }
     struct PCB_struct *tmp = readyqueue.head;
     readyqueue.head = readyqueue.head->next;
+    if (readyqueue.head == NULL) { readyqueue.tail = NULL; }
     tmp->next = NULL;
     return tmp;
 }

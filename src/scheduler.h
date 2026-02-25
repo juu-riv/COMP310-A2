@@ -16,6 +16,7 @@ void set_policy(enum policy_enum scheduling_policy);
 enum policy_enum get_policy(void);
 int get_is_running(void);
 int get_is_working(void);
+int get_is_multithreaded(void);
 void set_is_multithreaded(void);
 void set_has_to_quit(void);
 void scheduler_workers(void);
