@@ -171,8 +171,8 @@ source SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
 int quit() {
     scheduler_quit();
     printf("Bye!\n");
-    return 0;
-    //exit(0);
+    if (get_is_multithreaded()) { return 0; }
+    else { exit(0); }
 }
 
 int set(char *var, char *value) {
