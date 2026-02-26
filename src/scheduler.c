@@ -10,6 +10,7 @@ static enum policy_enum policy = FCFS;
 static int quantum = 2;
 
 static int is_running = 0;
+static int is_active = 0;
 
 static int is_multithreaded = 0;
 static int is_working = 0;
@@ -120,16 +121,22 @@ void *preemptive_scheduler_mt(void *args) {
     while (1) {
         pthread_mutex_lock(&queue_mutex);
 
-        while (queue_is_empty() && !has_to_quit) {
+        while (queue_is_empty() && !(has_to_quit && is_active == 0)) {
             pthread_cond_wait(&queue_cond, &queue_mutex);
         }
 
-        if (queue_is_empty() && has_to_quit) {
+        if (queue_is_empty() && has_to_quit && is_active == 0) {
             pthread_mutex_unlock(&queue_mutex);
             break;
         }
 
+        if (queue_is_empty()) {
+            pthread_mutex_unlock(&queue_mutex);
+            continue;
+        }
+
         struct PCB_struct *pcb = queue_dequeue();
+        is_active++;
         pthread_mutex_unlock(&queue_mutex);
 
         int counter = quantum;
@@ -152,14 +159,26 @@ void *preemptive_scheduler_mt(void *args) {
             mem_free(pcb);
             PCB_free(pcb);
         }
+        is_active--;
+        pthread_cond_broadcast(&queue_cond);
         pthread_mutex_unlock(&queue_mutex);
     }
     return NULL;
 }
 
+void scheduler_join() {
+    pthread_join(workers[0], NULL);
+    pthread_join(workers[1], NULL);
+}
+
 void scheduler_stop() {
     pthread_mutex_lock(&queue_mutex);
-    is_running = 0;
+
+    if (!is_working) {
+        pthread_mutex_unlock(&queue_mutex);
+        return;
+    }
+
     has_to_quit = 1;
     pthread_cond_broadcast(&queue_cond);
     pthread_mutex_unlock(&queue_mutex);
@@ -170,8 +189,6 @@ void scheduler_stop() {
     }
     pthread_mutex_lock(&queue_mutex);
     is_working = 0;
-    queue_destroy();
-    has_to_quit = 0;
     pthread_mutex_unlock(&queue_mutex);
 }
 
@@ -185,6 +202,13 @@ void scheduler_enqueue(struct PCB_struct *pcb) {
 void scheduler_enqueue_first(struct PCB_struct *pcb) {
     pthread_mutex_lock(&queue_mutex);
     queue_enqueue_first(pcb);
+    pthread_cond_broadcast(&queue_cond);
+    pthread_mutex_unlock(&queue_mutex);
+}
+
+void scheduler_quit() {
+    pthread_mutex_lock(&queue_mutex);
+    has_to_quit = 1;
     pthread_cond_broadcast(&queue_cond);
     pthread_mutex_unlock(&queue_mutex);
 }

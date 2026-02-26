@@ -169,9 +169,10 @@ source SCRIPT.TXT		Executes the file SCRIPT.TXT\n ";
 }
 
 int quit() {
-    scheduler_stop();
+    scheduler_quit();
     printf("Bye!\n");
-    exit(0);
+    return 0;
+    //exit(0);
 }
 
 int set(char *var, char *value) {
@@ -485,7 +486,6 @@ int exec(char *args[], int args_size) {
         }
 
         struct PCB_struct *pcb = mem_alloc(p);  // load memory and create PCB
-        //if (is_background) { pcb->background = 1; }
         fclose(p);
 
         scheduler_enqueue(pcb);
@@ -493,6 +493,7 @@ int exec(char *args[], int args_size) {
 
     if (is_background) {
         struct PCB_struct *batch = mem_alloc(stdin);
+        // batch->background = 1;
         scheduler_enqueue_first(batch);
     }
 

@@ -39,7 +39,8 @@ int main(int argc, char *argv[]) {
             exit(99);           // ignore all other errors
 
         if (feof(stdin)) {
-            if (batch_mode) { scheduler_stop(); }
+            scheduler_quit();
+            if (get_is_multithreaded()) { scheduler_join(); }
             return 0;
         }
 

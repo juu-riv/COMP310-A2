@@ -25,7 +25,9 @@ int non_preemptive_scheduler();
 int preemptive_scheduler();
 void *preemptive_scheduler_mt(void *args);
 void scheduler_stop(void);
+void scheduler_join(void);
 void scheduler_enqueue(struct PCB_struct *pcb);
 void scheduler_enqueue_first(struct PCB_struct *pcb);
+void scheduler_quit(void);
 
 #endif //A2_261120458_SCHEDULER_H
